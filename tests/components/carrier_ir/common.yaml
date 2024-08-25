@@ -1,0 +1,8 @@
+remote_transmitter:
+  pin: 4
+  carrier_duty_percent: 50%
+
+climate:
+  - platform: carrier_ir
+    name: Carrier IR
+    use_fahrenheit: false

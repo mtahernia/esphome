@@ -1,41 +1,41 @@
-import esphome.codegen as cg
-import esphome.config_validation as cv
 from esphome import automation
+import esphome.codegen as cg
 from esphome.components import binary_sensor
+import esphome.config_validation as cv
 from esphome.const import (
+    CONF_ADDRESS,
+    CONF_BUTTON,
+    CONF_CARRIER_FREQUENCY,
+    CONF_CHANNEL,
+    CONF_CHECK,
+    CONF_CODE,
+    CONF_COMMAND,
     CONF_COMMAND_REPEATS,
     CONF_DATA,
-    CONF_TRIGGER_ID,
-    CONF_NBITS,
-    CONF_ADDRESS,
-    CONF_COMMAND,
-    CONF_CODE,
-    CONF_PULSE_LENGTH,
-    CONF_SYNC,
-    CONF_ZERO,
-    CONF_ONE,
-    CONF_INVERTED,
-    CONF_PROTOCOL,
-    CONF_GROUP,
+    CONF_DELTA,
     CONF_DEVICE,
-    CONF_SECOND,
-    CONF_STATE,
-    CONF_CHANNEL,
     CONF_FAMILY,
-    CONF_REPEAT,
-    CONF_WAIT_TIME,
-    CONF_TIMES,
-    CONF_TYPE_ID,
-    CONF_CARRIER_FREQUENCY,
+    CONF_GROUP,
+    CONF_ID,
+    CONF_INVERTED,
+    CONF_LEVEL,
+    CONF_MAGNITUDE,
+    CONF_NBITS,
+    CONF_ONE,
+    CONF_PROTOCOL,
+    CONF_PULSE_LENGTH,
     CONF_RC_CODE_1,
     CONF_RC_CODE_2,
-    CONF_MAGNITUDE,
+    CONF_REPEAT,
+    CONF_SECOND,
+    CONF_STATE,
+    CONF_SYNC,
+    CONF_TIMES,
+    CONF_TRIGGER_ID,
+    CONF_TYPE_ID,
+    CONF_WAIT_TIME,
     CONF_WAND_ID,
-    CONF_LEVEL,
-    CONF_DELTA,
-    CONF_ID,
-    CONF_BUTTON,
-    CONF_CHECK,
+    CONF_ZERO,
 )
 from esphome.core import coroutine
 from esphome.schema_extractors import SCHEMA_EXTRACT, schema_extractor
@@ -1729,6 +1729,40 @@ def midea_dumper(var, config):
 
 @register_action("midea", MideaAction, MIDEA_SCHEMA)
 async def midea_action(var, config, args):
+    vec_ = cg.std_vector.template(cg.uint8)
+    template_ = await cg.templatable(config[CONF_CODE], args, vec_, vec_)
+    cg.add(var.set_code(template_))
+
+
+# Carrier
+CarrierData, CarrierBinarySensor, CarrierTrigger, CarrierAction, CarrierDumper = (
+    declare_protocol("Carrier")
+)
+CarrierAction = ns.class_("CarrierAction", RemoteTransmitterActionBase)
+CARRIER_SCHEMA = cv.Schema(
+    {
+        cv.Required(CONF_CODE): cv.All([cv.hex_uint8_t], cv.Length(min=5, max=5)),
+    }
+)
+
+
+@register_binary_sensor("carrier", CarrierBinarySensor, CARRIER_SCHEMA)
+def carrier_binary_sensor(var, config):
+    cg.add(var.set_data(config[CONF_CODE]))
+
+
+@register_trigger("carrier", CarrierTrigger, CarrierData)
+def carrier_trigger(var, config):
+    pass
+
+
+@register_dumper("carrier", CarrierDumper)
+def carrier_dumper(var, config):
+    pass
+
+
+@register_action("carrier", CarrierAction, CARRIER_SCHEMA)
+async def carrier_action(var, config, args):
     vec_ = cg.std_vector.template(cg.uint8)
     template_ = await cg.templatable(config[CONF_CODE], args, vec_, vec_)
     cg.add(var.set_code(template_))
