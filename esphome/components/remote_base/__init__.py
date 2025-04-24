@@ -1997,3 +1997,55 @@ async def mirage_action(var, config, args):
     vec_ = cg.std_vector.template(cg.uint8)
     template_ = await cg.templatable(config[CONF_CODE], args, vec_, vec_)
     cg.add(var.set_code(template_))
+
+
+# Toto
+(
+    TotoData,
+    TotoBinarySensor,
+    TotoTrigger,
+    TotoAction,
+    TotoDumper,
+) = declare_protocol("Toto")
+
+TOTO_SCHEMA = cv.Schema(
+    {
+        cv.Optional(CONF_RC_CODE_1, default=0): cv.hex_int_range(0, 0xF),
+        cv.Optional(CONF_RC_CODE_2, default=0): cv.hex_int_range(0, 0xF),
+        cv.Required(CONF_COMMAND): cv.hex_uint8_t,
+    }
+)
+
+
+@register_binary_sensor("toto", TotoBinarySensor, TOTO_SCHEMA)
+def toto_binary_sensor(var, config):
+    cg.add(
+        var.set_data(
+            cg.StructInitializer(
+                TotoData,
+                ("rc_code_1", config[CONF_RC_CODE_1]),
+                ("rc_code_2", config[CONF_RC_CODE_2]),
+                ("command", config[CONF_COMMAND]),
+            )
+        )
+    )
+
+
+@register_trigger("toto", TotoTrigger, TotoData)
+def toto_trigger(var, config):
+    pass
+
+
+@register_dumper("toto", TotoDumper)
+def toto_dumper(var, config):
+    pass
+
+
+@register_action("toto", TotoAction, TOTO_SCHEMA)
+async def Toto_action(var, config, args):
+    template_ = await cg.templatable(config[CONF_RC_CODE_1], args, cg.uint8)
+    cg.add(var.set_rc_code_1(template_))
+    template_ = await cg.templatable(config[CONF_RC_CODE_2], args, cg.uint8)
+    cg.add(var.set_rc_code_2(template_))
+    template_ = await cg.templatable(config[CONF_COMMAND], args, cg.uint8)
+    cg.add(var.set_command(template_))

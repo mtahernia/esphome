@@ -179,6 +179,16 @@ bool APIServerConnectionBase::send_text_sensor_state_response(const TextSensorSt
 bool APIServerConnectionBase::send_subscribe_logs_response(const SubscribeLogsResponse &msg) {
   return this->send_message_<SubscribeLogsResponse>(msg, 29);
 }
+#ifdef USE_API_NOISE
+#endif
+#ifdef USE_API_NOISE
+bool APIServerConnectionBase::send_noise_encryption_set_key_response(const NoiseEncryptionSetKeyResponse &msg) {
+#ifdef HAS_PROTO_MESSAGE_DUMP
+  ESP_LOGVV(TAG, "send_noise_encryption_set_key_response: %s", msg.dump().c_str());
+#endif
+  return this->send_message_<NoiseEncryptionSetKeyResponse>(msg, 125);
+}
+#endif
 bool APIServerConnectionBase::send_homeassistant_service_response(const HomeassistantServiceResponse &msg) {
 #ifdef HAS_PROTO_MESSAGE_DUMP
   ESP_LOGVV(TAG, "send_homeassistant_service_response: %s", msg.dump().c_str());
@@ -482,6 +492,29 @@ bool APIServerConnectionBase::send_voice_assistant_audio(const VoiceAssistantAud
   ESP_LOGVV(TAG, "send_voice_assistant_audio: %s", msg.dump().c_str());
 #endif
   return this->send_message_<VoiceAssistantAudio>(msg, 106);
+}
+#endif
+#ifdef USE_VOICE_ASSISTANT
+#endif
+#ifdef USE_VOICE_ASSISTANT
+#endif
+#ifdef USE_VOICE_ASSISTANT
+bool APIServerConnectionBase::send_voice_assistant_announce_finished(const VoiceAssistantAnnounceFinished &msg) {
+#ifdef HAS_PROTO_MESSAGE_DUMP
+  ESP_LOGVV(TAG, "send_voice_assistant_announce_finished: %s", msg.dump().c_str());
+#endif
+  return this->send_message_<VoiceAssistantAnnounceFinished>(msg, 120);
+}
+#endif
+#ifdef USE_VOICE_ASSISTANT
+#endif
+#ifdef USE_VOICE_ASSISTANT
+bool APIServerConnectionBase::send_voice_assistant_configuration_response(
+    const VoiceAssistantConfigurationResponse &msg) {
+#ifdef HAS_PROTO_MESSAGE_DUMP
+  ESP_LOGVV(TAG, "send_voice_assistant_configuration_response: %s", msg.dump().c_str());
+#endif
+  return this->send_message_<VoiceAssistantConfigurationResponse>(msg, 122);
 }
 #endif
 #ifdef USE_VOICE_ASSISTANT
@@ -1138,6 +1171,50 @@ bool APIServerConnectionBase::read_message(uint32_t msg_size, uint32_t msg_type,
 #endif
       break;
     }
+    case 119: {
+#ifdef USE_VOICE_ASSISTANT
+      VoiceAssistantAnnounceRequest msg;
+      msg.decode(msg_data, msg_size);
+#ifdef HAS_PROTO_MESSAGE_DUMP
+      ESP_LOGVV(TAG, "on_voice_assistant_announce_request: %s", msg.dump().c_str());
+#endif
+      this->on_voice_assistant_announce_request(msg);
+#endif
+      break;
+    }
+    case 121: {
+#ifdef USE_VOICE_ASSISTANT
+      VoiceAssistantConfigurationRequest msg;
+      msg.decode(msg_data, msg_size);
+#ifdef HAS_PROTO_MESSAGE_DUMP
+      ESP_LOGVV(TAG, "on_voice_assistant_configuration_request: %s", msg.dump().c_str());
+#endif
+      this->on_voice_assistant_configuration_request(msg);
+#endif
+      break;
+    }
+    case 123: {
+#ifdef USE_VOICE_ASSISTANT
+      VoiceAssistantSetConfiguration msg;
+      msg.decode(msg_data, msg_size);
+#ifdef HAS_PROTO_MESSAGE_DUMP
+      ESP_LOGVV(TAG, "on_voice_assistant_set_configuration: %s", msg.dump().c_str());
+#endif
+      this->on_voice_assistant_set_configuration(msg);
+#endif
+      break;
+    }
+    case 124: {
+#ifdef USE_API_NOISE
+      NoiseEncryptionSetKeyRequest msg;
+      msg.decode(msg_data, msg_size);
+#ifdef HAS_PROTO_MESSAGE_DUMP
+      ESP_LOGVV(TAG, "on_noise_encryption_set_key_request: %s", msg.dump().c_str());
+#endif
+      this->on_noise_encryption_set_key_request(msg);
+#endif
+      break;
+    }
     default:
       return false;
   }
@@ -1255,6 +1332,22 @@ void APIServerConnection::on_execute_service_request(const ExecuteServiceRequest
   }
   this->execute_service(msg);
 }
+#ifdef USE_API_NOISE
+void APIServerConnection::on_noise_encryption_set_key_request(const NoiseEncryptionSetKeyRequest &msg) {
+  if (!this->is_connection_setup()) {
+    this->on_no_setup_connection();
+    return;
+  }
+  if (!this->is_authenticated()) {
+    this->on_unauthenticated_access();
+    return;
+  }
+  NoiseEncryptionSetKeyResponse ret = this->noise_encryption_set_key(msg);
+  if (!this->send_noise_encryption_set_key_response(ret)) {
+    this->on_fatal_error();
+  }
+}
+#endif
 #ifdef USE_COVER
 void APIServerConnection::on_cover_command_request(const CoverCommandRequest &msg) {
   if (!this->is_connection_setup()) {
@@ -1623,6 +1716,35 @@ void APIServerConnection::on_subscribe_voice_assistant_request(const SubscribeVo
     return;
   }
   this->subscribe_voice_assistant(msg);
+}
+#endif
+#ifdef USE_VOICE_ASSISTANT
+void APIServerConnection::on_voice_assistant_configuration_request(const VoiceAssistantConfigurationRequest &msg) {
+  if (!this->is_connection_setup()) {
+    this->on_no_setup_connection();
+    return;
+  }
+  if (!this->is_authenticated()) {
+    this->on_unauthenticated_access();
+    return;
+  }
+  VoiceAssistantConfigurationResponse ret = this->voice_assistant_get_configuration(msg);
+  if (!this->send_voice_assistant_configuration_response(ret)) {
+    this->on_fatal_error();
+  }
+}
+#endif
+#ifdef USE_VOICE_ASSISTANT
+void APIServerConnection::on_voice_assistant_set_configuration(const VoiceAssistantSetConfiguration &msg) {
+  if (!this->is_connection_setup()) {
+    this->on_no_setup_connection();
+    return;
+  }
+  if (!this->is_authenticated()) {
+    this->on_unauthenticated_access();
+    return;
+  }
+  this->voice_assistant_set_configuration(msg);
 }
 #endif
 #ifdef USE_ALARM_CONTROL_PANEL

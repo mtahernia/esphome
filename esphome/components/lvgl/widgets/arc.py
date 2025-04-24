@@ -1,5 +1,6 @@
 import esphome.config_validation as cv
 from esphome.const import (
+    CONF_GROUP,
     CONF_MAX_VALUE,
     CONF_MIN_VALUE,
     CONF_MODE,
@@ -20,7 +21,7 @@ from ..defines import (
     literal,
 )
 from ..lv_validation import angle, get_start_value, lv_float
-from ..lvcode import lv, lv_obj
+from ..lvcode import lv, lv_expr, lv_obj
 from ..types import LvNumber, NumberType
 from . import Widget
 
@@ -66,9 +67,13 @@ class ArcType(NumberType):
             lv.arc_set_mode(w.obj, literal(config[CONF_MODE]))
             lv.arc_set_change_rate(w.obj, config[CONF_CHANGE_RATE])
 
-        if config.get(CONF_ADJUSTABLE) is False:
-            lv_obj.remove_style(w.obj, nullptr, literal("LV_PART_KNOB"))
-            w.clear_flag("LV_OBJ_FLAG_CLICKABLE")
+        if CONF_ADJUSTABLE in config:
+            if not config[CONF_ADJUSTABLE]:
+                lv_obj.remove_style(w.obj, nullptr, literal("LV_PART_KNOB"))
+                w.clear_flag("LV_OBJ_FLAG_CLICKABLE")
+            elif CONF_GROUP not in config:
+                # For some reason arc does not get automatically added to the default group
+                lv.group_add_obj(lv_expr.group_get_default(), w.obj)
 
         value = await get_start_value(config)
         if value is not None:

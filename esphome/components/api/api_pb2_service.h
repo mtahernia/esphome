@@ -83,6 +83,12 @@ class APIServerConnectionBase : public ProtoService {
 #endif
   virtual void on_subscribe_logs_request(const SubscribeLogsRequest &value){};
   bool send_subscribe_logs_response(const SubscribeLogsResponse &msg);
+#ifdef USE_API_NOISE
+  virtual void on_noise_encryption_set_key_request(const NoiseEncryptionSetKeyRequest &value){};
+#endif
+#ifdef USE_API_NOISE
+  bool send_noise_encryption_set_key_response(const NoiseEncryptionSetKeyResponse &msg);
+#endif
   virtual void on_subscribe_homeassistant_services_request(const SubscribeHomeassistantServicesRequest &value){};
   bool send_homeassistant_service_response(const HomeassistantServiceResponse &msg);
   virtual void on_subscribe_home_assistant_states_request(const SubscribeHomeAssistantStatesRequest &value){};
@@ -247,6 +253,21 @@ class APIServerConnectionBase : public ProtoService {
 #ifdef USE_VOICE_ASSISTANT
   virtual void on_voice_assistant_timer_event_response(const VoiceAssistantTimerEventResponse &value){};
 #endif
+#ifdef USE_VOICE_ASSISTANT
+  virtual void on_voice_assistant_announce_request(const VoiceAssistantAnnounceRequest &value){};
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  bool send_voice_assistant_announce_finished(const VoiceAssistantAnnounceFinished &msg);
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  virtual void on_voice_assistant_configuration_request(const VoiceAssistantConfigurationRequest &value){};
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  bool send_voice_assistant_configuration_response(const VoiceAssistantConfigurationResponse &msg);
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  virtual void on_voice_assistant_set_configuration(const VoiceAssistantSetConfiguration &value){};
+#endif
 #ifdef USE_ALARM_CONTROL_PANEL
   bool send_list_entities_alarm_control_panel_response(const ListEntitiesAlarmControlPanelResponse &msg);
 #endif
@@ -334,6 +355,9 @@ class APIServerConnection : public APIServerConnectionBase {
   virtual void subscribe_home_assistant_states(const SubscribeHomeAssistantStatesRequest &msg) = 0;
   virtual GetTimeResponse get_time(const GetTimeRequest &msg) = 0;
   virtual void execute_service(const ExecuteServiceRequest &msg) = 0;
+#ifdef USE_API_NOISE
+  virtual NoiseEncryptionSetKeyResponse noise_encryption_set_key(const NoiseEncryptionSetKeyRequest &msg) = 0;
+#endif
 #ifdef USE_COVER
   virtual void cover_command(const CoverCommandRequest &msg) = 0;
 #endif
@@ -419,6 +443,13 @@ class APIServerConnection : public APIServerConnectionBase {
 #ifdef USE_VOICE_ASSISTANT
   virtual void subscribe_voice_assistant(const SubscribeVoiceAssistantRequest &msg) = 0;
 #endif
+#ifdef USE_VOICE_ASSISTANT
+  virtual VoiceAssistantConfigurationResponse voice_assistant_get_configuration(
+      const VoiceAssistantConfigurationRequest &msg) = 0;
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  virtual void voice_assistant_set_configuration(const VoiceAssistantSetConfiguration &msg) = 0;
+#endif
 #ifdef USE_ALARM_CONTROL_PANEL
   virtual void alarm_control_panel_command(const AlarmControlPanelCommandRequest &msg) = 0;
 #endif
@@ -435,6 +466,9 @@ class APIServerConnection : public APIServerConnectionBase {
   void on_subscribe_home_assistant_states_request(const SubscribeHomeAssistantStatesRequest &msg) override;
   void on_get_time_request(const GetTimeRequest &msg) override;
   void on_execute_service_request(const ExecuteServiceRequest &msg) override;
+#ifdef USE_API_NOISE
+  void on_noise_encryption_set_key_request(const NoiseEncryptionSetKeyRequest &msg) override;
+#endif
 #ifdef USE_COVER
   void on_cover_command_request(const CoverCommandRequest &msg) override;
 #endif
@@ -519,6 +553,12 @@ class APIServerConnection : public APIServerConnectionBase {
 #endif
 #ifdef USE_VOICE_ASSISTANT
   void on_subscribe_voice_assistant_request(const SubscribeVoiceAssistantRequest &msg) override;
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  void on_voice_assistant_configuration_request(const VoiceAssistantConfigurationRequest &msg) override;
+#endif
+#ifdef USE_VOICE_ASSISTANT
+  void on_voice_assistant_set_configuration(const VoiceAssistantSetConfiguration &msg) override;
 #endif
 #ifdef USE_ALARM_CONTROL_PANEL
   void on_alarm_control_panel_command_request(const AlarmControlPanelCommandRequest &msg) override;
